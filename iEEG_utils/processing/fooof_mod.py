@@ -41,15 +41,15 @@ def fit_group(freqs, spectra, freq_range = [0.5,100], n_jobs = -1,
     aperiodic_mode : TYPE, optional
         type of aperiodic model; The default is 'lorentzian'.
     regularization_weight : TYPE, optional
-        DESCRIPTION. The default is 0.
+        For initializing a FOOOF object. The default is 0.
     min_peak_height : TYPE, optional
-        DESCRIPTION. The default is 0.15.
+        For peak finding. The default is 0.15.
     peak_threshold : TYPE, optional
-        DESCRIPTION. The default is 2.
+        For initializing FOOOF object. The default is 2.
 
     Returns
     -------
-    fgs : fitted FOOOFGroup object, can be queried for aperiodic params.
+    fg : fitted FOOOFGroup object, can be queried for aperiodic params.
 
     '''
     fg = FOOOFGroup(peak_width_limits=peak_width_limits, max_n_peaks=max_n_peaks,
