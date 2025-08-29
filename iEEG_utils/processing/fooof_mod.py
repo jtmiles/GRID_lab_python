@@ -61,6 +61,6 @@ def fit_group(freqs, spectra, freq_range = [0.5,100], n_jobs = -1,
     fg._ap_guess = ap_guesses
     fg._ap_bounds = ap_bounds
 
-    fgs = fg.fit(freqs, spectra, freq_range=freq_range,n_jobs=n_jobs) 
-    return fgs
+    fg.fit(freqs, spectra, freq_range=freq_range,n_jobs=n_jobs) 
+    return fg
     
