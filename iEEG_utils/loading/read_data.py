@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu May  1, 2025
+edits feb 2026
 
 @author: JTM
 """
@@ -14,6 +15,7 @@ from tkinter import filedialog
 def select_directory(title="Select Folder"):
     """
     Opens a dialog box to select a directory and returns the absolute path.
+    should define what is later referred to as "fstr"
     """
     # Initialize tkinter and hide the main root window
     root = tk.Tk()
