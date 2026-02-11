@@ -8,6 +8,31 @@ Created on Thu May  1, 2025
 import pandas as pd
 import os
 import re
+import tkinter as tk
+from tkinter import filedialog
+
+def select_directory(title="Select Folder"):
+    """
+    Opens a dialog box to select a directory and returns the absolute path.
+    """
+    # Initialize tkinter and hide the main root window
+    root = tk.Tk()
+    root.withdraw()
+    
+    # Ensure the dialog appears on top of other windows
+    root.attributes('-topmost', True)
+    
+    # Open the directory selection dialog
+    # Returns the absolute path as a normal string
+    selected_path = filedialog.askdirectory(title=title)
+    
+    # Destroy the root window to clean up resources
+    root.destroy()
+    
+    # Normalize the path for the current OS (e.g., handles backslashes on Windows)
+    # This ensures the path behaves like a 'raw' string for filesystem operations
+    return os.path.normpath(selected_path) if selected_path else ""
+
 
 def load_iEEG(fstr, load_meta=True, chs=None):
     """
