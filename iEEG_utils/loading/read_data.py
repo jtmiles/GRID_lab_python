@@ -40,9 +40,7 @@ def load_iEEG(fstr, load_meta=True, chs=None):
             else:
                 data = pd.read_csv(fstr+"\\"+f,usecols=chs)
         if load_meta:
-            channels = re.search(r"channels.txt",f)
-            if channels:
-                chtab = pd.read_csv(fstr+"\\"+f,delimiter="\t")
+            chtab = load_info(fstr)
                 assert len(chtab.sampling_frequency.unique()) == 1, "expecting a single sampling frequency"
                 srate = chtab.sampling_frequency.unique()[0]
            
@@ -60,17 +58,42 @@ def load_info(fstr):
     ----------
     fstr : string
         string pointing to the FOLDER with meatadata file to load.
-        Looks for '*channels.txt' file with basic metadata annotations
-        NOTE - channels file is tab delimited
+        Looks for '*channels.csv' file with basic metadata annotations
+        NOTE - channels file is comma delimited (hence, csv)
 
     Returns
     -------
-    chtable : pandas dataframe
+    pandas dataframe (returned directly, no variable created first)
         full table containing metatdata
         NOTE - this behavior is different from load_iEEG, which just returns
                the sampling rate from the table!
     """
     for f in os.listdir(fstr):
-        channels = re.search(r"channels.txt",f)
+        channels = re.search(r"channels.csv",f)
         if channels:
-            return pd.read_csv(fstr+"\\"+f,delimiter="\t")
+            return pd.read_csv(fstr+"\\"+f,delimiter=",")
+        
+def load_montage(fstr):
+    """
+    Standalone that loads pre-made montage info
+    Useful for adding context to iEEG data (sbj age, regions, ch names etc.)
+
+    Parameters
+    ----------
+    fstr : string
+        string pointing to the FOLDER with meatadata file to load.
+        Looks for '*channels.csv' file with basic metadata annotations
+        NOTE - channels file is comma delimited (hence, csv)
+
+    Returns
+    -------
+    pandas dataframe (returned directly, no variable created first)
+        table with channel metatadata (| ID | age | region | ch | name |)
+        NOTE - this behavior is different from load_iEEG, which just returns
+               the sampling rate from the table!
+    """
+    for f in os.listdir(fstr):
+        montage = re.search(r"montage.csv",f)
+        if montage:
+            return pd.read_csv(fstr+"\\"+f,delimiter=",")
+        
