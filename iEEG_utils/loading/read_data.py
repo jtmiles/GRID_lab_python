@@ -41,8 +41,8 @@ def load_iEEG(fstr, load_meta=True, chs=None):
                 data = pd.read_csv(fstr+"\\"+f,usecols=chs)
         if load_meta:
             chtab = load_info(fstr)
-                assert len(chtab.sampling_frequency.unique()) == 1, "expecting a single sampling frequency"
-                srate = chtab.sampling_frequency.unique()[0]
+            assert len(chtab.sampling_frequency.unique()) == 1, "expecting a single sampling frequency"
+            srate = chtab.sampling_frequency.unique()[0]
            
     if load_meta:
         return srate, data
