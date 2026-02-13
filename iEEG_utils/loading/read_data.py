@@ -60,23 +60,29 @@ def load_iEEG(fstr, load_meta=True, chs=None):
             raw data saved in .csv file.    
     """
     for f in os.listdir(fstr):
+        
+        if load_meta:
+            chtab = load_info(fstr,"channels")
+            assert len(chtab.sampling_frequency.unique()) == 1, "expecting a single sampling frequency"
+            srate = chtab.sampling_frequency.unique()[0]
+            montab = load_info(fstr,"montage")
+            chs = montab.name.to_list().append("time")
+            
         iEEG = re.search(r"iEEG.csv",f,re.IGNORECASE)
         if iEEG:
             if chs is None:
                 data = pd.read_csv(fstr+"\\"+f)
             else:
                 data = pd.read_csv(fstr+"\\"+f,usecols=chs)
-        if load_meta:
-            chtab = load_info(fstr)
-            assert len(chtab.sampling_frequency.unique()) == 1, "expecting a single sampling frequency"
-            srate = chtab.sampling_frequency.unique()[0]
+        
+            
            
     if load_meta:
         return srate, data
     else:
         return data
 
-def load_info(fstr):
+def load_info(fstr, ftype="montage"):
     """
     Standalone that just loads metadata
     Useful for checking on basic data descriptions before loading
@@ -85,8 +91,11 @@ def load_info(fstr):
     ----------
     fstr : string
         string pointing to the FOLDER with meatadata file to load.
-        Looks for '*channels.csv' file with basic metadata annotations
-        NOTE - channels file is comma delimited (hence, csv)
+        Looks for '*channels.csv' or "montage.csv" file with basic metadata
+        NOTE - both files are comma delimited (hence, csv)
+    ftype (kwarg) : string
+        defaults to "montage", but can also be "channels"
+        
 
     Returns
     -------
@@ -96,31 +105,8 @@ def load_info(fstr):
                the sampling rate from the table!
     """
     for f in os.listdir(fstr):
-        channels = re.search(r"channels.csv",f)
+        channels = re.search(ftype+".csv",f)
         if channels:
             return pd.read_csv(fstr+"\\"+f,delimiter=",")
         
-def load_montage(fstr):
-    """
-    Standalone that loads pre-made montage info
-    Useful for adding context to iEEG data (sbj age, regions, ch names etc.)
-
-    Parameters
-    ----------
-    fstr : string
-        string pointing to the FOLDER with meatadata file to load.
-        Looks for '*channels.csv' file with basic metadata annotations
-        NOTE - channels file is comma delimited (hence, csv)
-
-    Returns
-    -------
-    pandas dataframe (returned directly, no variable created first)
-        table with channel metatadata (| ID | age | region | ch | name |)
-        NOTE - this behavior is different from load_iEEG, which just returns
-               the sampling rate from the table!
-    """
-    for f in os.listdir(fstr):
-        montage = re.search(r"montage.csv",f)
-        if montage:
-            return pd.read_csv(fstr+"\\"+f,delimiter=",")
         
