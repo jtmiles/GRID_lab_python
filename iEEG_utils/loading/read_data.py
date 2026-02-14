@@ -65,15 +65,15 @@ def load_iEEG(fstr, load_meta=True, chs=None):
             chtab = load_info(fstr,"channels")
             assert len(chtab.sampling_frequency.unique()) == 1, "expecting a single sampling frequency"
             srate = chtab.sampling_frequency.unique()[0]
-            montab = load_info(fstr,"montage")
-            chs = montab.name.to_list().append("time")
+            montage = load_info(fstr,"montage")
+            chs = montage.name.to_list().append("time")
             
         iEEG = re.search(r"iEEG.csv",f,re.IGNORECASE)
         if iEEG:
             if chs is None:
-                data = pd.read_csv(fstr+"\\"+f)
+                data = pd.read_csv(fstr+"\\"+f, index_col=0)
             else:
-                data = pd.read_csv(fstr+"\\"+f,usecols=chs)
+                data = pd.read_csv(fstr+"\\"+f,usecols=chs, index_col=0)
         
             
            
@@ -105,8 +105,8 @@ def load_info(fstr, ftype="montage"):
                the sampling rate from the table!
     """
     for f in os.listdir(fstr):
-        channels = re.search(ftype+".csv",f)
-        if channels:
+        tab = re.search(ftype+".csv",f)
+        if tab:
             return pd.read_csv(fstr+"\\"+f,delimiter=",")
         
         

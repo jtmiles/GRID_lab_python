@@ -203,3 +203,34 @@ def calc_spectra(data, srate, t_res=1/8, f_res=0.5):
     f,spectra = welch(redata, fs=srate, window='hann', nperseg=nsampswin, 
                       noverlap=nsampswin*0.875, nfft=nsampswin, detrend=False)
     return spectra,f,centers
+
+def bipolar_reref(data,srate,resrate,lpfreq=100, norm="zscore"):
+    '''
+    Parameters
+    ----------
+    data : 2-d array (n x 2)
+        channel pairs for re-referencing
+    srate : float/int
+        sampling rate (original)
+    resrate : float/int
+        resampled rate to bring everything to.
+    lpfreq : float/int (optional)
+        cutoff frequency for lowpass filter
+        default is resrate/2, but will be set to 150 for actual analysis
+    norm : string
+        can be either "zscore" or "MAD"
+        defaults to "zscore"
+
+    Returns
+    -------
+    1 dimensional np array of bipolar re-referenced data.
+    ts = resampled timestamps (starting at 0)
+    ## to-do: most data
+    '''
+    
+    # remove baseline drift with 1 second rolling average
+    hpfdata = data-data.rolling(window=int(srate),min_periods=int(srate/2),center=True).mean()
+    # filter 60 Hz line noise, harmonics, and lowpass. then resample and normalize traces
+    [ts,normdata,filt_wins] = filt_resample(hpfdata, srate, resrate, lpfreq=lpfreq, norm=norm)
+    # bipolar re-referencing pair from region
+    return(ts,np.squeeze(np.diff(normdata,axis=1)))
