@@ -62,7 +62,7 @@ def load_iEEG(fstr, load_meta=True, chs=None):
     for f in os.listdir(fstr):
         
         if load_meta:
-            chtab = load_info(fstr,"channels")
+            chtab = load_info(fstr,ftype="channels")
             assert len(chtab.sampling_frequency.unique()) == 1, "expecting a single sampling frequency"
             srate = chtab.sampling_frequency.unique()[0]
             montage = load_info(fstr,"montage")
