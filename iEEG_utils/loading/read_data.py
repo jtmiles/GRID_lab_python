@@ -65,7 +65,7 @@ def load_iEEG(fstr, load_meta=True, chs=None):
             chtab = load_info(fstr,ftype="channels")
             assert len(chtab.sampling_frequency.unique()) == 1, "expecting a single sampling frequency"
             srate = chtab.sampling_frequency.unique()[0]
-            montage = load_info(fstr,"montage")
+            montage = load_info(fstr,ftype="montage")
             chs = montage.name.to_list().append("time")
             
         iEEG = re.search(r"iEEG.csv",f,re.IGNORECASE)
@@ -91,7 +91,7 @@ def load_info(fstr, ftype="montage"):
     ----------
     fstr : string
         string pointing to the FOLDER with meatadata file to load.
-        Looks for '*channels.csv' or "montage.csv" file with basic metadata
+        Looks for '*channels.csv' or '*montage.csv' file with basic metadata
         NOTE - both files are comma delimited (hence, csv)
     ftype (kwarg) : string
         defaults to "montage", but can also be "channels"
