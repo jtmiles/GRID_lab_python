@@ -127,7 +127,7 @@ def filt_resample(data, srate, resrate, lpfreq=256, norm='MAD'):
     # Identify artifact
     filt_wins = np.zeros(datafilt.shape,dtype=bool)
     for i in range(data.shape[1]):
-        high_amps = np.abs((datafilt[:,i]-np.median(datafilt[:,i]))/MAD(datafilt[:,i]))>10
+        high_amps = np.abs((datafilt[:,i]-np.median(datafilt[:,i]))/MAD(datafilt[:,i]))>8
         amp_wins = rolling_sum(high_amps,int(resrate/8)) # 0.125 seconds
     
         # create a mask that identifies high amplitude windows
@@ -146,12 +146,9 @@ def filt_resample(data, srate, resrate, lpfreq=256, norm='MAD'):
         print("not normalizing")
         normdata = datafilt
 
-    # apply small Gaussian filter to nearby points
-    # really doesn't do much
-    # normdata = gfilt(normdata,1,axis=0,order=0,mode='nearest',radius=2)
     return dsts, normdata, filt_wins
 
-def calc_spectra(data, srate, t_res=1/8, f_res=0.5):
+def window_data(data, srate, t_res=1/8, t_win=1):
     '''
     calculate spectra spaced by t_res seconds at f_res using welch's method
     NOTE - welch params are hardcoded for consistency! change them here
@@ -168,27 +165,23 @@ def calc_spectra(data, srate, t_res=1/8, f_res=0.5):
     t_res : float
         time between spectra centers in seconds
         default is 1/8
-    f_res : float
-        resolution for frequency spacing in Hz
-        NOTE - set by length of window/number of samples
-        default is 0.5 (2 second window; nperseg set to srate)
-        (maybe switch this to timewin in seconds?)
+    t_win : float
+        window duration (in seconds)
+        will truncate in conversion to int if a fraction
 
     Returns
     -------
-    spectra : ndarray (len(centers) x len(f))
-        time frequency matrix of power spectra
-    f : vector (srate/2 * 1/f_res)
-        frequency bins
+    all_samps : array 
+        sample indices shaped as (times x window lengths)
     centers : ~len(data * t_res)
         time point index each spectral calculation is centered around
         NOTE - np.unique(np.diff(centers))/srate == t_res
     ''' 
     
-    # get ixs to calculate ffts (via welch) for data segments
+    # get ixs for spectral calcs on data segments
     dtsamps = srate*t_res # time resolution, in samples
-    # number of samples per fft window
-    nsampswin = int(srate/f_res)
+    # number of samples per window
+    nsampswin = int(srate*t_win)
     # center points (in samples - drop the first and last seconds of data)
     centers = np.arange(nsampswin/2,data.shape[0]-nsampswin/2,dtsamps,dtype=int)
     allsamps = np.zeros((len(centers),nsampswin),dtype=int)
@@ -196,15 +189,14 @@ def calc_spectra(data, srate, t_res=1/8, f_res=0.5):
         # grab 1/2 windows around center point for each dt
         allsamps[ix,:] = np.arange(c-(nsampswin/2),c+(nsampswin/2),dtype=int)
     
-    # reshape the data
-    redata = data[allsamps]
+    return allsamps, centers
     
-    # calculate PSD for centers
-    f,spectra = welch(redata, fs=srate, window='hann', nperseg=nsampswin, 
-                      noverlap=nsampswin*0.875, nfft=nsampswin, detrend=False)
-    return spectra,f,centers
+    # # calculate PSD for centers
+    # f,spectra = welch(redata, fs=srate, window='hann', nperseg=nsampswin, 
+    #                   noverlap=nsampswin*0.875, nfft=nsampswin, detrend=False)
+    # return spectra,f,centers
 
-def bipolar_reref(data,srate,resrate,lpfreq=100, norm="zscore"):
+def bipolar_reref(data,srate,resrate,lpfreq=100,norm="zscore",applyfilt=False):
     '''
     Parameters
     ----------
@@ -233,4 +225,4 @@ def bipolar_reref(data,srate,resrate,lpfreq=100, norm="zscore"):
     # filter 60 Hz line noise, harmonics, and lowpass. then resample and normalize traces
     [ts,normdata,filt_wins] = filt_resample(hpfdata, srate, resrate, lpfreq=lpfreq, norm=norm)
     # bipolar re-referencing pair from region
-    return(ts,np.squeeze(np.diff(normdata,axis=1)))
+    return ts,np.squeeze(np.diff(normdata,axis=1)),filt_wins
