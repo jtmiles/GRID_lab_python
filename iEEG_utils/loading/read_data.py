@@ -59,15 +59,16 @@ def load_iEEG(fstr, load_meta=True, chs=None):
         data : ndarray
             raw data saved in .csv file.    
     """
+    if load_meta:
+        chtab = load_info(fstr,ftype="channels")
+        # remove nans from table (usually from too many rows saved in csv)
+        assert len(chtab.sampling_frequency.dropna().unique()) == 1, "expecting a single sampling frequency"
+        srate = chtab.sampling_frequency.unique()[0]
+        montage = load_info(fstr,ftype="montage")
+        chs = montage.name.to_list().append("time")
+        
     for f in os.listdir(fstr):
         
-        if load_meta:
-            chtab = load_info(fstr,ftype="channels")
-            assert len(chtab.sampling_frequency.unique()) == 1, "expecting a single sampling frequency"
-            srate = chtab.sampling_frequency.unique()[0]
-            montage = load_info(fstr,ftype="montage")
-            chs = montage.name.to_list().append("time")
-            
         iEEG = re.search(r"iEEG.csv",f,re.IGNORECASE)
         if iEEG:
             if chs is None:
