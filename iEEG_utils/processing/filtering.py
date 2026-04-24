@@ -5,10 +5,11 @@ from scipy.signal import butter, sosfiltfilt
 from scipy.stats import median_abs_deviation as MAD
 from scipy.interpolate import splev, splrep
 from scipy.signal import welch
+from scipy.ndimage import convolve1d
 
-def rolling_sum(arr, window_size):
+def rolling_sum(arr, window_size, axis=0):
     """
-    (centered) rolling average from np.convolve with window of ones
+    (centered) rolling sum from scipy.ndimage.convolve1d with window of ones
     
     Parameters
     ----------
@@ -24,8 +25,16 @@ def rolling_sum(arr, window_size):
         NOTE: summed values are centered, even at edges.
 
     """
-    kernel = np.ones(window_size, dtype=int)
-    return np.convolve(arr, kernel, mode='same')
+    kernel = np.ones(window_size, dtype=arr.dtype)
+    return convolve1d(arr, kernel, axis=axis, mode="constant", cval=0.0)
+
+def zscore(arr_data):
+  '''
+  simple 1-d zscore
+  array-like input
+  handles nans in data, so can be used if data are masked
+  '''
+  return((arr_data-np.nanmean(arr_data))/np.nanstd(arr_data))
 
 def bfilt(data, srate, n, fpass, filter_type):
     """
