@@ -137,7 +137,7 @@ def filt_resample(data, srate, resrate, lpfreq=256, norm='MAD'):
     filt_wins = np.zeros(datafilt.shape,dtype=bool)
     for i in range(data.shape[1]):
         high_amps = np.abs((datafilt[:,i]-np.median(datafilt[:,i]))/MAD(datafilt[:,i]))>8
-        amp_wins = rolling_sum(high_amps,int(resrate/8)) # 0.125 seconds
+        amp_wins = rolling_sum(np.int64(high_amps),int(resrate/8)) # 0.125 seconds
     
         # create a mask that identifies high amplitude windows
         filt_wins[:,i] = np.logical_not(amp_wins>16)
