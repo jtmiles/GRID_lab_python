@@ -159,10 +159,11 @@ def filt_resample(data, srate, resrate, lpfreq=256, norm='MAD'):
 
 def window_data(data, srate, t_res=1/8, t_win=1):
     '''
-    calculate spectra spaced by t_res seconds at f_res using welch's method
-    NOTE - welch params are hardcoded for consistency! change them here
-           (not going to add them as kwargs)
-    
+    generate an array of indices for windowing data
+    each row has t_win*srate columns
+    every entry going down the column is shifted by t_res seconds
+    as such, if t_res is less than t_win, indices will repeat
+
     Parameters
     ----------
     data : numpy array (should be vector!)
@@ -200,10 +201,6 @@ def window_data(data, srate, t_res=1/8, t_win=1):
     
     return allsamps, centers
     
-    # # calculate PSD for centers
-    # f,spectra = welch(redata, fs=srate, window='hann', nperseg=nsampswin, 
-    #                   noverlap=nsampswin*0.875, nfft=nsampswin, detrend=False)
-    # return spectra,f,centers
 
 def bipolar_reref(data,srate,resrate,lpfreq=100,norm="zscore",applyfilt=False):
     '''
