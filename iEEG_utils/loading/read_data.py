@@ -78,9 +78,9 @@ def load_iEEG(fstr, load_meta=True, chs=None):
         try:
             # supplied directory (fstr)
             chtab = load_info(fstr, ftype="channels")
-        
+            # NOTE: load_info will also look through the parent dir
         except FileNotFoundError:
-            # not there either, assuming it doesn't exist
+            # not in either, assuming it doesn't exist
             warnings.warn("Channels metadata not found; proceeding without metadata.",
                         RuntimeWarning)
             chtab = None
@@ -119,7 +119,7 @@ def load_info(fstr, ftype="montage"):
     fstr : string
         string pointing to the FOLDER with meatadata file to load.
         Looks for '*channels.csv', "*events.csv", or '*montage.csv' file with basic metadata
-        NOTE - both files are comma delimited (hence, csv)
+        NOTE - all files are comma delimited (hence, csv)
     ftype (kwarg) : string
         defaults to "montage", but can also be "events" or "channels"
         (honestly, not a strict check here, just looking for fstr that ends with csv
@@ -146,9 +146,14 @@ def load_info(fstr, ftype="montage"):
         parent = os.path.dirname(fstr)
         fnames = np.array(os.listdir(os.path.dirname(fstr)))
         matches = [True if re.search(fr"{ftype}\.csv$",f,re.IGNORECASE) else False for f in fnames]
-        try:
+        if len(fnames[matches]) == 1:
             f = fnames[matches].item()
-            return pd.read_csv(os.path.join(parent,f), delimiter=",")
-        except:
+        elif len(fnames[matches]) > 1:
+            fs = fnames[matches]
+            # search fs for str that matches fstr (assuming only 1 exists!)
+            montmatch = [fs[ix][:re.search(r'_',fs[ix]).start()] in fstr for ix in range(len(fs))]
+            f = fs[montmatch].item()
+        else:
             raise FileNotFoundError("Couldn't find "+ftype+" file...")
+        return pd.read_csv(os.path.join(parent,f), delimiter=",")
         
