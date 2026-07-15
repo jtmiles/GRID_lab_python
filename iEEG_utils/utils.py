@@ -18,7 +18,7 @@ from scipy.stats import median_abs_deviation as MAD
 
 from iEEG_utils.processing.filtering import rolling_sum
 
-def find_valid_pairs(ch_list):
+def find_valid_pairs(ch_list,reg_list):
   '''
   Looks through a list of channel names (from a montage file) and identifies
   which are next to one another on an electrode (same electrode name and one
@@ -26,6 +26,8 @@ def find_valid_pairs(ch_list):
 
   ch_list is a list of channel name strings
     > USE A LIST SO APPEND WORKS
+  reg_list is a list of region name strings
+  
   entries should be formated as:
     > 2 or 3 letters
     > either a space, typical separator("_" and "-" are most common), or no space
@@ -40,11 +42,12 @@ def find_valid_pairs(ch_list):
   while len(ch_list) >= 2:
       current = ch_list.pop()      # always remove the last element
       previous = ch_list[-1]       # peek at the new last element
-
+      
       m1 = pattern.match(current)
       m2 = pattern.match(previous)
 
-      if not m1 or not m2:
+      same_reg = (reg_list.pop()==reg_list[-1])
+      if not m1 or not m2 or not same_reg:
           continue
 
       prefix1, num1 = m1.group(1), int(m1.group(2))

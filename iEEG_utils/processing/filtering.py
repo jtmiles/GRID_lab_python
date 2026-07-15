@@ -15,13 +15,13 @@ def rolling_sum(arr, window_size, axis=0):
     ----------
     arr : array (1D)
         array (vector, really) to be summed over.
-    window_size : TYPE
+    window_size : int
         number of points to include in sum.
 
     Returns
     -------
     array
-        moving average over array.
+        moving sum over array.
         NOTE: summed values are centered, even at edges.
 
     """
@@ -73,7 +73,7 @@ def filt_resample(data, srate, resrate, lpfreq=256, norm='MAD'):
 
     Parameters
     ----------
-    data : numpy array
+    data : dataframe of channels as columns
         data in samples x channels.
     srate : float/int
         sampling rate.
@@ -113,7 +113,7 @@ def filt_resample(data, srate, resrate, lpfreq=256, norm='MAD'):
     
     # new timing vector    
     xq = np.arange(1/upsrate, ts[-1], 1/upsrate)
-    # interpolate - CHECK TRANSPOSING, MAY BE WEIRD HOLDOVER FROM MATLAB
+    # interpolate
     itpdata = np.zeros((len(xq),data.shape[1]))
     # interpolate (is looping really necessary or is there a better fxn?) 
     for i in range(data.shape[1]):
