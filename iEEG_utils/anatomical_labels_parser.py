@@ -1,3 +1,8 @@
+'''
+For use with clinically generated Anatomical_labels.txt file
+Parses into a dataframe
+'''
+
 import re
 import pandas as pd
 
@@ -8,8 +13,7 @@ ELECTRODE_RE = re.compile(r'^[A-Za-z]{2,4}$')
 CONTACT_RE = re.compile(
     r'^\s*(\d+):\s*'
     r'(Gray|White|Mixed|Unknown)\s*'
-    r'\(Gray:\s*(\d+)%,\s*White:\s*(\d+)%,\s*Unk:\s*(\d+)%\)\s*;'
-)
+    r'\(Gray:\s*(\d+)%,\s*White:\s*(\d+)%,\s*Unk:\s*(\d+)%\)\s*;')
 
 # Atlas labels following the semicolon
 LABEL_RE = re.compile(r'([A-Za-z0-9_\-]+)\s*\((\d+)%\)')
@@ -45,6 +49,8 @@ def parse_anatomical_labels(txt_file):
     """
     Parse an sEEG Anatomical_Labels.txt file.
 
+    Input is path (string) to file location
+
     Returns
     -------
     pandas.DataFrame
@@ -71,13 +77,8 @@ def parse_anatomical_labels(txt_file):
             if not match or current_electrode is None:
                 continue
 
-            (
-                contact_num,
-                classification,
-                gray_pct,
-                white_pct,
-                unk_pct,
-            ) = match.groups()
+            (contact_num, classification,gray_pct,
+             white_pct, unk_pct) = match.groups()
 
             try:
                 label_section = raw_line.split(";", 1)[1]
@@ -87,17 +88,13 @@ def parse_anatomical_labels(txt_file):
             atlas_distribution = parse_atlas_distribution(label_section)
             primary_atlas = get_primary_atlas(atlas_distribution)
 
-            rows.append(
-                {
-                    "electrode": current_electrode,
-                    "contact": int(contact_num),
-                    "classification": classification,
-                    "gray_pct": int(gray_pct),
-                    "white_pct": int(white_pct),
-                    "unk_pct": int(unk_pct),
-                    "primary_atlas": primary_atlas,
-                    "atlas_distribution": atlas_distribution,
-                }
-            )
+            rows.append({"electrode": current_electrode,
+                         "contact": int(contact_num),
+                         "classification": classification,
+                         "gray_pct": int(gray_pct),
+                         "white_pct": int(white_pct),
+                         "unk_pct": int(unk_pct),
+                         "primary_atlas": primary_atlas,
+                         "atlas_distribution": atlas_distribution})
 
     return pd.DataFrame(rows)
