@@ -65,7 +65,7 @@ def bfilt(data, srate, n, fpass, filter_type):
     
     return filt_data
 
-def filt_resample(data, srate, resrate, lpfreq=256, norm='MAD'):
+def filt_resample(data, srate, resrate, norm='MAD'):
     '''
     resamples data to a common frequency with cubic spline interpolation
     performs 3-harmonic 60 Hz noise filtering and low-pass filtering
@@ -79,9 +79,6 @@ def filt_resample(data, srate, resrate, lpfreq=256, norm='MAD'):
         sampling rate.
     resrate : float/int
         resampled rate to bring everything to.
-    lpfreq : float/int (optional)
-        cutoff frequency for lowpass filter
-        default is resrate/2, but will be set to 150 for actual analysis
     norm : str (optional)
         normalization method. defaults to 'MAD' (median absolute deviation),
         but can also be 'zscore'  
@@ -127,11 +124,10 @@ def filt_resample(data, srate, resrate, lpfreq=256, norm='MAD'):
     # nested filters:
     # 1) 180 Hz bandstop (3rd 60 Hz harmonic)
     # 2) 150 Hz bandstop (2nd 60 Hz harmonic)
-    # 3) 150 Hz lowpass
-    # 4) 60 Hz bandstop (line-noise)
-    datafilt = bfilt(bfilt(bfilt(bfilt(itpdata[::ds,:],resrate,6,[179,181],'bandstop'),
-                     resrate,6,[149,151],'bandstop'),resrate,6,lpfreq,'lowpass'),
-                     resrate,4,[59,61],'bandstop')
+    # 3) 60 Hz bandstop (line-noise)
+    datafilt = bfilt(bfilt(bfilt(itpdata[::ds,:],resrate,6,[179,181],'bandstop'),
+                                                 resrate,6,[119,121],'bandstop'),
+                                                 resrate,4,[59,61],'bandstop')
     
     # Identify artifact
     filt_wins = np.zeros(datafilt.shape,dtype=bool)
@@ -202,7 +198,7 @@ def window_data(data, srate, t_res=1/8, t_win=1):
     return allsamps, centers
     
 
-def bipolar_reref(data,srate,resrate,lpfreq=100,norm="zscore",applyfilt=False):
+def bipolar_reref(data,srate,resrate,norm="zscore",applyfilt=False):
     '''
     Parameters
     ----------
@@ -212,9 +208,6 @@ def bipolar_reref(data,srate,resrate,lpfreq=100,norm="zscore",applyfilt=False):
         sampling rate (original)
     resrate : float/int
         resampled rate to bring everything to.
-    lpfreq : float/int (optional)
-        cutoff frequency for lowpass filter
-        default is resrate/2, but will be set to 150 for actual analysis
     norm : string
         can be either "zscore" or "MAD"
         defaults to "zscore"
