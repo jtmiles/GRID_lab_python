@@ -222,6 +222,6 @@ def bipolar_reref(data,srate,resrate,norm="zscore",applyfilt=False):
     # remove baseline drift with 1 second rolling average
     hpfdata = data-data.rolling(window=int(srate),min_periods=int(srate/2),center=True).mean()
     # filter 60 Hz line noise, harmonics, and lowpass. then resample and normalize traces
-    [ts,normdata,filt_wins] = filt_resample(hpfdata, srate, resrate, lpfreq=lpfreq, norm=norm)
+    [ts,normdata,filt_wins] = filt_resample(hpfdata, srate, resrate, norm=norm)
     # bipolar re-referencing pair from region
     return ts,np.squeeze(np.diff(normdata,axis=1)),filt_wins
