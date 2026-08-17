@@ -6,6 +6,7 @@ from scipy.stats import median_abs_deviation as MAD
 from scipy.interpolate import splev, splrep
 from scipy.signal import welch
 from scipy.ndimage import convolve1d
+from scipy.stats import median_abs_deviation
 
 def rolling_sum(arr, window_size, axis=0):
     """
@@ -28,13 +29,17 @@ def rolling_sum(arr, window_size, axis=0):
     kernel = np.ones(window_size, dtype=arr.dtype)
     return convolve1d(arr, kernel, axis=axis, mode="constant", cval=0.0)
 
-def zscore(arr_data):
+def zscore(arr_data,robust=False):
   '''
   simple 1-d zscore
   array-like input
   handles nans in data, so can be used if data are masked
   '''
-  return((arr_data-np.nanmean(arr_data))/np.nanstd(arr_data))
+  if robust:
+      MAD = median_abs_deviation(arr_data,center=np.median,nan_policy="omit")
+      return((arr_data-np.nanmedian(arr_data))/MAD)
+  else:
+      return((arr_data-np.nanmean(arr_data))/np.nanstd(arr_data))
 
 def bfilt(data, srate, n, fpass, filter_type):
     """
